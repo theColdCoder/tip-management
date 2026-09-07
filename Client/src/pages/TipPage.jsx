@@ -7,6 +7,7 @@ function TipPage() {
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
 
+  // Fetch worker data from the backend
   const fetchWorker = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/workers/${slug}`);
@@ -42,6 +43,7 @@ function TipPage() {
       return;
     }
     try {
+      // Send a POST request to the backend to create a tip
       const response = await fetch("http://localhost:3000/api/tips", {
         method: "POST",
         headers: {
@@ -67,6 +69,40 @@ function TipPage() {
     }
   };
 
+  // Function to create a checkout session
+  const createCheckout = async () => {
+    if (!amount || Number(amount) <= 0) {
+      alert("Please enter a valid tip amount");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/payments/checkout",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            workerId: worker.id,
+            amount: Number(amount),
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Checkout failed");
+      }
+
+      window.location.href = data.checkoutUrl;
+    } catch (error) {
+      console.error("Checkout error:", error);
+    }
+  };
+
   return (
     <main>
       <h1>Tip Page</h1>
@@ -88,8 +124,8 @@ function TipPage() {
         value={amount}
       />
 
-      <button onClick={createTip}>
-        Tip {worker.name} {amount && `$${amount}`}
+      <button onClick={createCheckout}>
+        Checkout {worker.name} {amount && `$${amount}`}
       </button>
     </main>
   );
