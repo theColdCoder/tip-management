@@ -17,6 +17,7 @@ router.get("/", async (req, res) => {
         email,
         profile_image,
         bio,
+        is_active,
         created_at
       `,
       )
@@ -140,6 +141,57 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+router.patch("/:id/deactivate", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from("workers")
+      .update({
+        is_active: false,
+      })
+      .eq("id", id)
+
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error deactivating worker", error);
+
+      return res.status(500).json({ error: error.message });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    console.error("Server error", error);
+
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/:id/activate", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from("workers")
+      .update({
+        is_active: true,
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Failed to activate worker", error);
+      return res.status(500).json({ error: error.message });
+    }
+    return res.json(data);
+  } catch (error) {
+    console.error("Server Error", error);
+    return res.status(500).json({ error: "Internal error server" });
+  }
+});
+
 // GET a specific worker by slug
 router.get("/:slug", async (req, res) => {
   const { slug } = req.params;
@@ -162,6 +214,7 @@ router.get("/:slug", async (req, res) => {
     `,
     )
     .eq("slug", slug)
+    .eq("is_active", true)
     .single();
 
   if (error) {

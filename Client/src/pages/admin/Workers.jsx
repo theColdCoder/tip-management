@@ -39,6 +39,40 @@ function Workers() {
     return <p>Loading workers...</p>;
   }
 
+  const toggleWorkerStatus = async (worker) => {
+    const action = worker.is_active ? "deactivate" : "activate";
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} ${worker.name}?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/workers/${worker.id}/${action}`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      const data = await response.JSON();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to deactivate worker");
+      }
+
+      setWorkers((currentWorkers) => {
+        return currentWorkers.map((worker) => {
+          return worker.id === data.id ? data : worker;
+        });
+      });
+    } catch (error) {
+      console.error("Error deactinving worker:", error);
+    }
+  };
+
   const createWorker = async () => {
     if (!formData.name || !formData.email) {
       alert("Name and email are required");
@@ -269,6 +303,17 @@ function Workers() {
                     className="text-blue-600 hover:underline"
                   >
                     View Tip Page
+                  </button>
+
+                  <button
+                    onClick={() => toggleWorkerStatus(worker)}
+                    className={
+                      worker.is_active
+                        ? "text-red-600 hover:underline"
+                        : "text-green-600 hover:underline"
+                    }
+                  >
+                    {worker.is_active ? "Deactivate" : "Activate"}
                   </button>
                 </td>
               </tr>

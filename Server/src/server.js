@@ -3,6 +3,7 @@ import cors from "cors";
 import workerRoutes from "./routes/workerRoutes.js";
 import tipRoutes from "./routes/tipRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import { supabase } from "./config/supabase.js";
 import stripe from "./config/stripe.js";
 
@@ -71,6 +72,7 @@ app.use(express.json());
 app.use("/api/workers", workerRoutes);
 app.use("/api/tips", tipRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.json({
